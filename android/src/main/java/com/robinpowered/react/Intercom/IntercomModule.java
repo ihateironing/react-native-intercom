@@ -37,17 +37,22 @@ public class IntercomModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void registerIdentifiedUser(ReadableMap options, Callback callback) {
-        if (options.hasKey("email") && options.getString("email").length() > 0) {
-            Intercom.client().registerIdentifiedUser(
-                    new Registration().withEmail(options.getString("email"))
-            );
-            Log.i(TAG, "registerIdentifiedUser with userEmail");
-            callback.invoke(null, null);
-        } else if (options.hasKey("userId") && options.getString("userId").length() > 0) {
-            Intercom.client().registerIdentifiedUser(
-                    new Registration().withUserId(options.getString("userId"))
-            );
-            Log.i(TAG, "registerIdentifiedUser with userId");
+        Registration registration = Registration.create();
+        boolean canRegister = false;
+
+        if (options.hasKey("userId") && !options.getString("userId").isEmpty()) {
+            registration.withUserId(options.getString("userId"));
+            canRegister = true;
+        }
+
+        if (options.hasKey("email") && !options.getString("email").isEmpty()) {
+            registration.withEmail(options.getString("email"));
+            canRegister = true;
+        }
+
+        if (canRegister) {
+            Intercom.client().registerIdentifiedUser(registration);
+            Log.i(TAG, "registerIdentifiedUser with userId=" + registration.getUserId() + " and email=" + registration.getEmail());
             callback.invoke(null, null);
         } else {
             Log.e(TAG, "registerIdentifiedUser called with invalid userId or email");
