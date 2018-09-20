@@ -11,7 +11,12 @@
 
 @implementation IntercomEventEmitter
 
-RCT_EXPORT_MODULE();
+RCT_EXPORT_MODULE()
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
 
 - (void)handleUpdateUnreadCount:(NSNotification *)notification {
     __weak IntercomEventEmitter *weakSelf = self;
