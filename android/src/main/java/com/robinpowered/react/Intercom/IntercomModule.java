@@ -1,5 +1,6 @@
 package com.robinpowered.react.Intercom;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
@@ -45,21 +46,26 @@ public class IntercomModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void registerIdentifiedUser(ReadableMap options, Promise promise) {
         try {
+            Registration registration = Registration.create();
+            ArrayList<String> registrationMethods = new ArrayList<String>();
+
+            if (options.hasKey("userId") && options.getString("userId").length() > 0) {
+                registration.withUserId(options.getString("userId"));
+                registrationMethods.add("userId");
+            }
+
             if (options.hasKey("email") && options.getString("email").length() > 0) {
-                Intercom.client().registerIdentifiedUser(
-                        new Registration().withEmail(options.getString("email"))
-                );
-                Log.i(TAG, "registerIdentifiedUser with userEmail");
-                promise.resolve(null);
-            } else if (options.hasKey("userId") && options.getString("userId").length() > 0) {
-                Intercom.client().registerIdentifiedUser(
-                        new Registration().withUserId(options.getString("userId"))
-                );
-                Log.i(TAG, "registerIdentifiedUser with userId");
-                promise.resolve(null);
-            } else {
+                registration.withEmail(options.getString("email"));
+                registrationMethods.add("userEmail");
+            }
+
+            if (registrationMethods.isEmpty()) {
                 Log.e(TAG, "registerIdentifiedUser called with invalid userId or email");
                 promise.reject("Invalid userId or email");
+            } else {
+                Intercom.client().registerIdentifiedUser(registration);
+                Log.i(TAG, "registerIdentifiedUser with " + TextUtils.join(" and ", registrationMethods));
+                promise.resolve(null);
             }
         } catch (Exception e) {
             Log.e(TAG, "Intercom not initialized");
